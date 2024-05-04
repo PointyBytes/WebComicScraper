@@ -24,12 +24,12 @@ Ensure you have Python installed on your machine. You can download it from [pyth
 Clone or download this repository to your local machine:
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/PointyBytes/WebComicScraper.git
 ```
 
 Navigate into the project directory:
 ```bash
-cd <repository-directory>
+cd WebComicScraper
 ```
 
 Before running the script, install the required Python libraries by running the following command in your terminal:
