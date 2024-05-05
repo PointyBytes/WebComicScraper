@@ -17,17 +17,37 @@ and was developed with assistance from OpenAI's GPT-3.5.
 """
 
 # TODO: Refaktor adding funktions and classes.
+# TODO: Do not overrite files
 # TODO: Add MOTD to this projekt.
 
 import requests
 import os
+import zipfile
 import settings
 
-base_url = settings.BASE_URL  # Base URL where the images can be found
-num_images = settings.NUM_IMAGES  # Number of images to download
-output_folder = settings.OUTPUT_FOLDER  # Name of the folder to save images
+base_url = settings.base_url  # Base URL where the images can be found
+num_images = settings.num_images  # Number of images to download
+output_folder = settings.output_folder  # Name of the folder to save images
+make_cbz = settings.make_cbz
+cbz_filename = f"{settings.cbz_filename}.cbz"
 num_downloaded = 0
 failed_downloads = []
+
+
+def zip_images(folder_path, output_file):
+    """
+    Zip all images in a specified folder into a single CBZ file.
+
+    Args:
+    folder_path (str): Path to the folder containing images.
+    output_file (str): Filename for the output CBZ file.
+    """
+    with zipfile.ZipFile(output_file, "w") as zipf:
+        for root, dirs, files in os.walk(folder_path):
+            for file in files:
+                if file.endswith((".png", ".jpg", ".jpeg")):
+                    zipf.write(os.path.join(root, file), file)
+    print(f"CBZ file created: {output_file}")
 
 
 # Create the folder if it does not exist
@@ -51,5 +71,10 @@ for i in range(1, num_images + 1):
         print(f"Failed to fetch image {image_path}")
         failed_downloads.append(f"{str(i).zfill(3)}.jpg")
 
+# Will create a CBZ file of all saved files if make_cbz is True
+if make_cbz:
+    zip_images(output_folder, cbz_filename)
+
 # TODO: Make a list that adds what images failed to saved.
 print(f"{num_downloaded} of {num_images} images downloaded to {output_folder}.")
+print(failed_downloads)
