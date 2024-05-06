@@ -16,65 +16,91 @@ This script was inspired by "Automate the Boring Stuff with Python" by Al Sweiga
 and was developed with assistance from OpenAI's GPT-3.5.
 """
 
-# TODO: Refaktor adding funktions and classes.
-# TODO: Do not overrite files
+# TODO: Do not overwrite files
 # TODO: Add MOTD to this projekt.
+# TODO: Make a list that adds what images failed to be saved.
 
 import requests
 import os
 import zipfile
-import settings
-
-base_url = settings.base_url  # Base URL where the images can be found
-num_images = settings.num_images  # Number of images to download
-output_folder = settings.output_folder  # Name of the folder to save images
-make_cbz = settings.make_cbz
-cbz_filename = f"{settings.cbz_filename}.cbz"
-num_downloaded = 0
-failed_downloads = []
+from settings import base_url, num_images, output_folder, make_cbz, cbz_filename
 
 
-def zip_images(folder_path, output_file):
-    """
-    Zip all images in a specified folder into a single CBZ file.
+class ImageDownloader:
+    """A class to handle downloading of images from a specified base URL to a local folder."""
 
-    Args:
-    folder_path (str): Path to the folder containing images.
-    output_file (str): Filename for the output CBZ file.
-    """
-    with zipfile.ZipFile(output_file, "w") as zipf:
-        for root, dirs, files in os.walk(folder_path):
-            for file in files:
-                if file.endswith((".png", ".jpg", ".jpeg")):
-                    zipf.write(os.path.join(root, file), file)
-    print(f"CBZ file created: {output_file}")
+    def __init__(self, base_url, output_folder):
+        """
+        Initialize the downloader with the base URL and output directory.
+
+        Args:
+        base_url (str): The URL where the images are located.
+        output_folder (str): The local directory where images will be saved.
+        """
+        self.base_url = base_url
+        self.output_folder = output_folder
+        self.downloaded = 0
+        self.failed_downloads = []
+
+    def download_images(self, num_images):
+        """Download a specified number of images and save them locally."""
+        # Ensure the output directory exists; if not, create it.
+        if not os.path.exists(self.output_folder):
+            os.makedirs(self.output_folder)
+
+        for i in range(1, num_images + 1):
+            image_url = f"{self.base_url}{i}.jpg"
+            response = requests.get(image_url)
+            image_path = os.path.join(self.output_folder, f"{str(i).zfill(3)}.jpg")
+
+            if response.status_code == 200:
+                with open(image_path, "wb") as f:
+                    f.write(response.content)
+                print(f"Image {image_path} saved successfully.")
+                self.downloaded += 1
+            else:
+                print(f"Failed to fetch image {image_path}")
+                self.failed_downloads.append(f"{str(i).zfill(3)}.jpg")
+
+    def results(self):
+        """Print results of the download process, including any failed downloads."""
+        print(
+            f"{self.downloaded} of {num_images} images downloaded to {self.output_folder}."
+        )
+        if self.failed_downloads:
+            print("Failed downloads:", self.failed_downloads)
 
 
-# Create the folder if it does not exist
-if not os.path.exists(output_folder):
-    os.makedirs(output_folder)
+class CBZCreator:
+    """A class to create a CBZ file from all images in a specified folder."""
 
-for i in range(1, num_images + 1):
-    image_url = f"{base_url}{i}.jpg"
-    response = requests.get(image_url)
-    # Using str.zfill() to ensure the filename always has three digits
-    image_path = os.path.join(
-        output_folder, f"{str(i).zfill(3)}.jpg"
-    )  # Complete path to the image including the folder name
+    def __init__(self, folder_path, output_file):
+        """
+        Initialize the CBZ creator with the folder containing images and the desired output file name.
 
-    if response.status_code == 200:
-        with open(image_path, "wb") as f:
-            f.write(response.content)
-        print(f"Image {image_path} saved successfully.")
-        num_downloaded += 1
-    else:
-        print(f"Failed to fetch image {image_path}")
-        failed_downloads.append(f"{str(i).zfill(3)}.jpg")
+        Args:
+        folder_path (str): Path to the folder containing images.
+        output_file (str): Filename for the output CBZ file.
+        """
+        self.folder_path = folder_path
+        self.output_file = output_file
 
-# Will create a CBZ file of all saved files if make_cbz is True
-if make_cbz:
-    zip_images(output_folder, cbz_filename)
+    def create_cbz(self):
+        """Zip all images in the specified folder into a single CBZ file."""
+        with zipfile.ZipFile(self.output_file, "w") as zipf:
+            for root, dirs, files in os.walk(self.folder_path):
+                for file in files:
+                    if file.endswith((".png", ".jpg", ".jpeg")):
+                        zipf.write(os.path.join(root, file), file)
+        print(f"CBZ file created: {self.output_file}")
 
-# TODO: Make a list that adds what images failed to saved.
-print(f"{num_downloaded} of {num_images} images downloaded to {output_folder}.")
-print(failed_downloads)
+
+if __name__ == "__main__":
+    downloader = ImageDownloader(base_url, output_folder)
+    downloader.download_images(num_images)
+    downloader.results()
+
+    # Optionally create a CBZ file if the setting is enabled
+    if make_cbz:
+        cbz_creator = CBZCreator(output_folder, f"{cbz_filename}.cbz")
+        cbz_creator.create_cbz()
