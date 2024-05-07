@@ -49,9 +49,11 @@ Modify the the name and `settings_example.py` file with the necessary parameters
 
 ```python
 # Example settings.py configuration
-BASE_URL = "https://example.com/images/"
-NUM_IMAGES = 50
-OUTPUT_FOLDER = "./Downloads/"
+base_url = "https://example.com/images/"
+num_images = 50
+output_folder = "./Downloads/"
+make_cbz = False
+cbz_filename = "Name of the Comic"
 ```
 
 ### Running the Script
