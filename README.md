@@ -2,9 +2,6 @@
 
 This repository hosts an image downloader script designed to download a series of images from specified URLs. It is an ongoing project, and the current version is an early iteration with plans for further expansion and feature enhancements.
 
-## License
-
-This project is open source and available under the **GNU GPL v3.0 or later**. You can find the full license text in the LICENSE file within this repository.
 
 ## Inspiration
 
@@ -14,6 +11,7 @@ The creation of this script was inspired by the book *Automate the Boring Stuff 
 - **Author's GitHub:** [asweigart](https://github.com/asweigart/)
 - **Book Website:** [Automate the Boring Stuff](https://automatetheboringstuff.com/)
 - **Print Version of the Book:** [No Starch Press](https://nostarch.com/automatestuff2) - Note: A 3rd edition is upcoming.
+
 
 ## Getting Started
 
@@ -32,7 +30,9 @@ Navigate into the project directory:
 cd WebComicScraper
 ```
 
+All the necessary libraries are listed in the [*requirements.txt*](requirements.txt) file.
 Before running the script, install the required Python libraries by running the following command in your terminal:
+
 ```bash
 pip install -r requirements.txt
 ```
@@ -63,10 +63,17 @@ python main.py
 
 This will start the process of downloading the specified number of images into the designated output folder.
 
+
 ## Contribution
 
 Contributions are welcome! If you have ideas for features or have found a bug, please open an issue or a pull request.
 
+
 ## Note
 
 This is an early version of the script, and I plan to expand it with more features and possibly GUI support in the future. Stay tuned!
+
+
+## License
+
+This project is open source and available under the **GNU GPL v3.0 or later**. You can find the full license text in the [LICENSE](LICENSE) file within this repository.
