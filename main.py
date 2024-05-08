@@ -49,9 +49,13 @@ class ImageDownloader:
             os.makedirs(self.output_folder)
 
         for i in range(1, num_images + 1):
-            image_url = f"{self.base_url}{i}.jpg"
+            image_url = f"{self.base_url}{i}"
             response = requests.get(image_url)
-            image_path = os.path.join(self.output_folder, f"{str(i).zfill(3)}.jpg")
+            content_type = response.headers["Content-Type"]
+            extension = self.get_file_extension(content_type)
+            image_path = os.path.join(
+                self.output_folder, f"{str(i).zfill(3)}{extension}"
+            )
 
             if response.status_code == 200:
                 with open(image_path, "wb") as f:
@@ -60,7 +64,7 @@ class ImageDownloader:
                 self.downloaded += 1
             else:
                 print(f"Failed to fetch image {image_path}")
-                self.failed_downloads.append(f"{str(i).zfill(3)}.jpg")
+                self.failed_downloads.append(f"{str(i).zfill(3)}{extension}")
 
     def get_file_extension(self, content_type):
         """Return the file extension based on the MIME type."""
