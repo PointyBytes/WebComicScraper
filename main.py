@@ -52,7 +52,9 @@ class ImageDownloader:
             image_url = f"{self.base_url}{i}"
             response = requests.get(image_url)
             content_type = response.headers["Content-Type"]
+            print(content_type)
             extension = self.get_file_extension(content_type)
+            print(extension)
             image_path = os.path.join(
                 self.output_folder, f"{str(i).zfill(3)}{extension}"
             )
