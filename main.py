@@ -70,14 +70,8 @@ class ImageDownloader:
 
     def get_file_extension(self, content_type):
         """Return the file extension based on the MIME type."""
-        if "image/jpeg" in content_type:
-            return ".jpg"
-        elif "image/png" in content_type:
-            return ".png"
-        elif "image/gif" in content_type:
-            return ".gif"
-        else:
-            return ""  # Default, if unknown or unsupported type
+        mapping = {"image/jpeg": ".jpg", "image/png": ".png", "image/gif": ".gif"}
+        return mapping.get(content_type.split(";")[0], "")  # Split to ignore charset
 
     def results(self):
         """Print results of the download process, including any failed downloads."""
