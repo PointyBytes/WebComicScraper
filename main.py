@@ -17,56 +17,68 @@ and was developed with assistance from OpenAI's GPT-3.5.
 """
 
 # TODO: Do not overwrite files
-# TODO: Add MOTD to this projekt.
+# TODO: Add MOTD to this project.
 # TODO: Make a list that adds what images failed to be saved.
 
 import requests
 import os
 import zipfile
+import logging
 from settings import base_url, num_images, output_folder, make_cbz, cbz_filename
+
+# Configure logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    filename="download_images.log",
+    filemode="w",
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
 
 
 class ImageDownloader:
     """A class to handle downloading of images from a specified base URL to a local folder."""
 
-    def __init__(self, base_url, output_folder):
+    def __init__(self, base_url, output_folder, num_images, make_cbz):
         """
         Initialize the downloader with the base URL and output directory.
-
-        Args:
-        base_url (str): The URL where the images are located.
-        output_folder (str): The local directory where images will be saved.
         """
         self.base_url = base_url
         self.output_folder = output_folder
+        self.num_images = num_images
+        self.make_cbz = make_cbz
         self.downloaded = 0
         self.failed_downloads = []
 
-    def download_images(self, num_images):
-        """Download a specified number of images and save them locally."""
+    def download_images(self):
+        """Download images and save them locally."""
         # Ensure the output directory exists; if not, create it.
         if not os.path.exists(self.output_folder):
             os.makedirs(self.output_folder)
+            logging.info(f"Created directory {self.output_folder}")
 
-        for i in range(1, num_images + 1):
-            image_url = f"{self.base_url}{i}"
+        for i in range(1, self.num_images + 1):
+            image_url = f"{self.base_url}{i}.jpg"  # Assuming all images are JPGs
             response = requests.get(image_url)
-            content_type = response.headers["Content-Type"]
-            print(content_type)
-            extension = self.get_file_extension(content_type)
-            print(extension)
-            image_path = os.path.join(
-                self.output_folder, f"{str(i).zfill(3)}{extension}"
-            )
+            content_type = response.headers.get("Content-Type", "")
 
-            if response.status_code == 200:
-                with open(image_path, "wb") as f:
-                    f.write(response.content)
-                print(f"Image {image_path} saved successfully.")
-                self.downloaded += 1
+            extension = self.get_file_extension(content_type)
+
+            if extension:
+                image_path = os.path.join(
+                    self.output_folder, f"{str(i).zfill(3)}{extension}"
+                )
+                if response.status_code == 200:
+                    with open(image_path, "wb") as f:
+                        f.write(response.content)
+                    logging.info(f"Image {image_path} saved successfully.")
+                    self.downloaded += 1
+                else:
+                    logging.warning(f"Failed to fetch image {image_url}")
+                    self.failed_downloads.append(f"{str(i).zfill(3)}{extension}")
             else:
-                print(f"Failed to fetch image {image_path}")
-                self.failed_downloads.append(f"{str(i).zfill(3)}{extension}")
+                logging.error(
+                    f"Unexpected content type for URL {image_url}: {content_type}"
+                )
 
     def get_file_extension(self, content_type):
         """Return the file extension based on the MIME type."""
@@ -75,11 +87,11 @@ class ImageDownloader:
 
     def results(self):
         """Print results of the download process, including any failed downloads."""
-        print(
-            f"{self.downloaded} of {num_images} images downloaded to {self.output_folder}."
+        logging.info(
+            f"{self.downloaded} of {self.num_images} images downloaded to {self.output_folder}."
         )
         if self.failed_downloads:
-            print("Failed downloads:", self.failed_downloads)
+            logging.info("Failed downloads: " + ", ".join(self.failed_downloads))
 
 
 class CBZCreator:
@@ -88,10 +100,6 @@ class CBZCreator:
     def __init__(self, folder_path, output_file):
         """
         Initialize the CBZ creator with the folder containing images and the desired output file name.
-
-        Args:
-        folder_path (str): Path to the folder containing images.
-        output_file (str): Filename for the output CBZ file.
         """
         self.folder_path = folder_path
         self.output_file = output_file
@@ -103,12 +111,12 @@ class CBZCreator:
                 for file in files:
                     if file.endswith((".png", ".jpg", ".jpeg")):
                         zipf.write(os.path.join(root, file), file)
-        print(f"CBZ file created: {self.output_file}")
+        logging.info(f"CBZ file created: {self.output_file}")
 
 
 if __name__ == "__main__":
-    downloader = ImageDownloader(base_url, output_folder)
-    downloader.download_images(num_images)
+    downloader = ImageDownloader(base_url, output_folder, num_images, make_cbz)
+    downloader.download_images()
     downloader.results()
 
     # Optionally create a CBZ file if the setting is enabled
