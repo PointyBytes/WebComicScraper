@@ -35,6 +35,27 @@ logging.basicConfig(
 )
 
 
+def printProgressBar(
+    iteration,
+    total,
+    prefix="",
+    suffix="",
+    decimals=1,
+    length=100,
+    fill="█",
+    printEnd="\r",
+):
+    """
+    Call in a loop to create terminal progress bar
+    """
+    percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
+    filledLength = int(length * iteration // total)
+    bar = fill * filledLength + "-" * (length - filledLength)
+    print(f"\r{prefix} |{bar}| {percent}% {suffix}", end=printEnd)
+    if iteration == total:
+        print()
+
+
 class ImageDownloader:
     """A class to handle downloading of images from a specified base URL to a local folder."""
 
@@ -56,11 +77,14 @@ class ImageDownloader:
             os.makedirs(self.output_folder)
             logging.info(f"Created directory {self.output_folder}")
 
+        printProgressBar(
+            0, self.num_images, prefix="Progress:", suffix="Complete", length=50
+        )
+
         for i in range(1, self.num_images + 1):
-            image_url = f"{self.base_url}{i}.jpg"  # Assuming all images are JPGs
+            image_url = f"{self.base_url}{i}.jpg"
             response = requests.get(image_url)
             content_type = response.headers.get("Content-Type", "")
-
             extension = self.get_file_extension(content_type)
 
             if extension:
@@ -79,6 +103,10 @@ class ImageDownloader:
                 logging.error(
                     f"Unexpected content type for URL {image_url}: {content_type}"
                 )
+
+            printProgressBar(
+                i, self.num_images, prefix="Progress:", suffix="Complete", length=50
+            )
 
     def get_file_extension(self, content_type):
         """Return the file extension based on the MIME type."""
@@ -121,5 +149,7 @@ if __name__ == "__main__":
 
     # Optionally create a CBZ file if the setting is enabled
     if make_cbz:
-        cbz_creator = CBZCreator(output_folder, f"{cbz_filename}.cbz")
+        # Ensure the CBZ file is saved in the output folder by combining the folder path and file name
+        cbz_file_path = os.path.join(output_folder, f"{cbz_filename}.cbz")
+        cbz_creator = CBZCreator(output_folder, cbz_file_path)
         cbz_creator.create_cbz()
