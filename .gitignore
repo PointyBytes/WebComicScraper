@@ -161,6 +161,11 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+# VS Code
+#  For a more comprehensive set of VS Code ignore rules, see:
+#  https://github.com/github/gitignore/blob/main/Global/VisualStudioCode.gitignore
+.vscode/
+
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore

@@ -82,7 +82,7 @@ class ImageDownloader:
         )
 
         for i in range(1, self.num_images + 1):
-            image_url = f"{self.base_url}{i}.jpg"
+            image_url = f"{self.base_url}{i}.png"
             response = requests.get(image_url)
             content_type = response.headers.get("Content-Type", "")
             extension = self.get_file_extension(content_type)
